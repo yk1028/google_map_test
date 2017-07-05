@@ -11,12 +11,14 @@
       height: 50%;
       width: 50%;
     }
+
     /* Optional: Makes the sample page fill the window. */
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
     }
+
     .controls {
       margin-top: 10px;
       border: 1px solid transparent;
@@ -26,9 +28,7 @@
       height: 32px;
       outline: none;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
 
-    #pac-input {
       background-color: #fff;
       font-family: Roboto;
       font-size: 15px;
@@ -38,6 +38,7 @@
       text-overflow: ellipsis;
       width: 300px;
     }
+
 
     #pac-input:focus {
       border-color: #4d90fe;
@@ -58,27 +59,31 @@
       font-size: 13px;
       font-weight: 300;
     }
-      .searches {
-        margin-left: 60%;
-      }
   </style>
 </head>
-<body>
-<div class="searches">
-  <button id="addbtn" >add</button>
-  <button id="routebtn" >경로 탐색</button>
-<input id="pac-input" class="controls" type="text"
-       placeholder="Enter a location">
-</div>
 
+<body>
 <div id="map"></div>
+<div>
+  <button id="addbtn">add</button>
+  <button id="routebtn">경로 탐색</button>
+  <button id="info">info</button>
+  <br>
+  <ol class="searches">
+    <li>
+      <input id="pac-input" class="controls" type="text" placeholder="Enter a location">
+      <button class="delbtn">delete</button>
+    </li>
+  </ol>
+</div>
 
 <script>
     // This example requires the Places library. Include the libraries=places
     // parameter when you first load the API. For example:
     // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
-  var map;
-  var search_count = 1;
+    var map;
+    var markers = [];
+    var search_count = 1;
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             center: {lat: 37.449610, lng: 126.653084},
@@ -94,7 +99,14 @@
 
         var infowindow = new google.maps.InfoWindow();
 
-        autocomplete.addListener('place_changed', function() {
+        //마커 생성
+        var marker = new google.maps.Marker({
+            map: map
+        });
+        marker.setVisible(false);
+        markers.push(marker);
+
+        autocomplete.addListener('place_changed', function () {
             infowindow.close();
             var place = autocomplete.getPlace();
             if (!place.geometry) {
@@ -112,10 +124,7 @@
                 map.setZoom(17);  // Why 17? Because it looks good.
             }
 
-            var marker = new google.maps.Marker({
-                map: map
-            });
-
+            //마커 생성 및 아이콘지정, 좌표 설정
             marker.setIcon(/** @type {google.maps.Icon} */({
                 url: place.icon,
                 size: new google.maps.Size(71, 71),
@@ -124,6 +133,7 @@
                 scaledSize: new google.maps.Size(35, 35)
             }));
             marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
 
             var address = '';
             if (place.address_components) {
@@ -140,10 +150,15 @@
         });
     }
 
-    $(document).on('click','#addbtn',(function () {
+
+    //검색창 추가
+    $(document).on('click', '#addbtn', (function () {
         var btn_id = "pac-input" + search_count;
         search_count++;
-        $('.searches').append('<input id="' + btn_id + '" class="controls" type="text" placeholder="Enter a location">');
+        $('.searches').append('<li>' +
+            '<input id="' + btn_id + '" class="controls" type="text" placeholder="Enter a location">' +
+            '<button class="delbtn">delete</button>' +
+            '</li>');
         var input = /** @type {!HTMLInputElement} */(
             document.getElementById(btn_id));
 
@@ -154,7 +169,14 @@
 
         var infowindow = new google.maps.InfoWindow();
 
-        autocomplete.addListener('place_changed', function() {
+        //마커 생성
+        var marker = new google.maps.Marker({
+            map: map
+        });
+        marker.setVisible(false);
+        markers.push(marker);
+
+        autocomplete.addListener('place_changed', function () {
             infowindow.close();
             var place = autocomplete.getPlace();
             if (!place.geometry) {
@@ -172,9 +194,6 @@
                 map.setZoom(17);  // Why 17? Because it looks good.
             }
 
-            var marker = new google.maps.Marker({
-                map: map
-            });
 
             marker.setIcon(/** @type {google.maps.Icon} */({
                 url: place.icon,
@@ -184,6 +203,8 @@
                 scaledSize: new google.maps.Size(35, 35)
             }));
             marker.setPosition(place.geometry.location);
+            marker.setVisible(true);
+
 
             var address = '';
             if (place.address_components) {
@@ -200,12 +221,32 @@
         });
     }));
 
-    $(document).on('click','#routebtn',(function (directionsService, directionsDisplay) {
+    //검색창 삭제
+    $(document).on('click', '.delbtn', function () {
+        var index = $(this).parent().index();
+        //마커가 있으면
+        if(markers[index] != undefined) {
+            markers[index].setMap(null);
+            markers.splice(index, 1);
+        }
+        $(this).parent().remove();
+        console.log(markers);
+    });
+
+    //정보 표시
+    $(document).on('click', '#info', function () {
+        for (var key in markers) {
+            console.log(markers[key]);
+        }
+    });
+
+    //경로 탐색
+    $(document).on('click', '#routebtn', (function (directionsService, directionsDisplay) {
         directionsService.route({
             origin: document.getElementById('input').value,
             destination: document.getElementById('end').value,
             travelMode: 'DRIVING'
-        }, function(response, status) {
+        }, function (response, status) {
             if (status === 'OK') {
                 directionsDisplay.setDirections(response);
             } else {
