@@ -63,8 +63,6 @@
 read
 <a href="/"> back</a><br>
 title: <%= @course.title %> <br>
-places: <%= @course.place_ids %>
-<br>
 <br>
 
 <ol>
@@ -82,6 +80,7 @@ places: <%= @course.place_ids %>
     var map;
     var geocoder;
     var infowindows;
+    var marker;
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -97,9 +96,13 @@ places: <%= @course.place_ids %>
         geocoder.geocode({'placeId': placeId}, function (results, status) {
             if (status === 'OK') {
                 if (results[0]) {
-                    map.setZoom(11);
+                    map.setZoom(16);
                     map.setCenter(results[0].geometry.location);
-                    var marker = new google.maps.Marker({
+
+                    if(marker != undefined) {
+                        marker.setMap(null);
+                    }
+                    marker = new google.maps.Marker({
                         map: map,
                         position: results[0].geometry.location
                     });
