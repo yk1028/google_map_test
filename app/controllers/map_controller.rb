@@ -16,5 +16,6 @@ class MapController < ApplicationController
 
   def read
     @course = Course.find(params[:id]);
+    @places = @course.place_ids.split(',');
   end
 end
