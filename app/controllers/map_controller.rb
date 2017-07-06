@@ -8,13 +8,13 @@ class MapController < ApplicationController
   end
 
   def real_create
-    @str = Course.new(title: params[:place_ids]);
+    @str = Course.new(title: params[:title], place_ids: params[:place_ids]);
     @str.save
 
     redirect_to '/'
   end
 
   def read
-    @course
+    @course = Course.find(params[:id]);
   end
 end

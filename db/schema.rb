@@ -14,14 +14,7 @@ ActiveRecord::Schema.define(version: 20170705114519) do
 
   create_table "courses", force: :cascade do |t|
     t.string   "title"
-    t.integer  "place_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["place_id"], name: "index_courses_on_place_id"
-  end
-
-  create_table "places", force: :cascade do |t|
-    t.string   "place_id"
+    t.string   "place_ids"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

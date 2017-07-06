@@ -70,6 +70,7 @@
 
     <input type="button" id="save" value="save">
     <br>
+  <input type="text" id="title" placeholder="title">
     <ol class="searches">
       <li>
         <input id="pac-input" class="controls" type="text" onkeydown="return enter(event)" placeholder="Enter a location">
@@ -240,15 +241,10 @@
 
     //정보 표시
     $(document).on('click', '#info', function () {
-        for (var key in markers) {
-            console.log(markers[key]);
-        }
         for (var key in autocompletes) {
-            if(autocompletes[key].getPlace() != undefined) {
-                console.log(autocompletes[key].getPlace().place_id);
-            }else{
-                console.log("no place_id");
-            }
+
+            console.log(autocompletes[key].getPlace());
+
         }
     });
 
@@ -268,17 +264,19 @@
 //        });
     }));
 
+    //저장
     $(document).on('click', '#save', function () {
         var place_ids = "";
+        var title = $("#title").val();
         for(key in autocompletes){
-             if (autocompletes[key] != undefined){
+             if (autocompletes[key].getPlace() != undefined){
                  place_ids += autocompletes[key].getPlace().place_id +",";
              }else{
                  window.alert("빈칸 ㄴ");
                  return false;
              }
         }
-        sendPost('real_create',place_ids)
+        sendPost('real_create', title ,place_ids)
     });
 
     function enter(e){
@@ -292,8 +290,8 @@
         }
     }
 
-    //string 전송
-    function sendPost(url , string){
+    //post 전송
+    function sendPost(url , title, p_id){
 
         var form=document.createElement("form");
         form.name='tempPost';
@@ -303,11 +301,20 @@
 
         var input=document.createElement("input");
         input.type="hidden";
-        input.name='place_ids';
-        input.value = string;
+        input.name='title';
+        input.value = title;
         //input.value= jQuery.JSONToString(object);
         $(form).append(input);
         $('#body').append(form);
+
+        var input=document.createElement("input");
+        input.type="hidden";
+        input.name='place_ids';
+        input.value = p_id;
+        //input.value= jQuery.JSONToString(object);
+        $(form).append(input);
+        $('#body').append(form);
+
         form.submit();
     }
 

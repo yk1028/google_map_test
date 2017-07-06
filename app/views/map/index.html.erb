@@ -1,7 +1,10 @@
 index
 <a href="map/create"> creat</a>
+<br>
 
 <% @course.each do |c| %>
-    <%=c.title%>
+    <%=c.title%> :
+    <%=c.place_ids%>
+    <a href="map/read/<%=c.id%>">확인</a>
     <br>
 <%end%>
