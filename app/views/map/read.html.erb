@@ -66,9 +66,9 @@ title: <%= @course.title %> <br>
 <br>
 
 <ol>
-  <% @places.each do |c| %>
+  <% @course.places.each do |p| %>
       <li>
-        <input type="button" class="p_id" value="<%= c %>">
+        <input type="button" class="place" id="<%=p.place_id%>" value="<%= p.place_name %>">
       </li>
   <% end %>
 </ol>
@@ -91,8 +91,9 @@ title: <%= @course.title %> <br>
         infowindow = new google.maps.InfoWindow;
     }
 
-    $(document).on('click', '.p_id', function geocodePlaceId() {
-        var placeId = $(this).attr("value");
+    $(document).on('click', '.place', function geocodePlaceId() {
+        var placeId = $(this).attr("id");
+        var placeName = $(this).attr("value");
         geocoder.geocode({'placeId': placeId}, function (results, status) {
             if (status === 'OK') {
                 if (results[0]) {
@@ -106,7 +107,19 @@ title: <%= @course.title %> <br>
                         map: map,
                         position: results[0].geometry.location
                     });
-                    infowindow.setContent(results[0].formatted_address);
+
+                    //icon
+
+                    var address = '';
+                    if (results[0].address_components) {
+                        address = [
+                            (results[0].address_components[0] && results[0].address_components[0].short_name || ''),
+                            (results[0].address_components[1] && results[0].address_components[1].short_name || ''),
+                            (results[0].address_components[2] && results[0].address_components[2].short_name || '')
+                        ].join(' ');
+                    }
+                    //정보 표시
+                    infowindow.setContent('<div><strong>' + placeName + '</strong><br>' + address);
                     infowindow.open(map, marker);
                 } else {
                     window.alert('No results found');

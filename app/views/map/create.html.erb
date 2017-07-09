@@ -207,7 +207,7 @@
                 anchor: new google.maps.Point(17, 34),
                 scaledSize: new google.maps.Size(35, 35)
             }));
-            marker.setPosition(place.geometry.location);
+            marker.setPosition(place.geometry.location);  //이부분 때문에 정보창이 약간 옆으로 밀리는 듯
             marker.setVisible(true);
 
             var address = '';
@@ -266,16 +266,18 @@
     //저장
     $(document).on('click', '#save', function () {
         var place_ids = "";
+        var place_names ="";
         var title = $("#title").val();
         for(key in autocompletes){
              if (autocompletes[key].getPlace() != undefined){
                  place_ids += autocompletes[key].getPlace().place_id +",";
+                 place_names += autocompletes[key].getPlace().name +",";
              }else{
                  window.alert("빈칸 ㄴ");
                  return false;
              }
         }
-        sendPost('real_create', title ,place_ids)
+        sendPost('real_create', title ,place_ids, place_names)
     });
 
     function enter(e){
@@ -290,7 +292,7 @@
     }
 
     //post 전송
-    function sendPost(url , title, p_id){
+    function sendPost(url , title, p_id, p_name){
 
         var form=document.createElement("form");
         form.name='tempPost';
@@ -310,6 +312,14 @@
         input.type="hidden";
         input.name='place_ids';
         input.value = p_id;
+        //input.value= jQuery.JSONToString(object);
+        $(form).append(input);
+        $('#body').append(form);
+
+        var input=document.createElement("input");
+        input.type="hidden";
+        input.name='place_names';
+        input.value = p_name;
         //input.value= jQuery.JSONToString(object);
         $(form).append(input);
         $('#body').append(form);
