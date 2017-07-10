@@ -58,22 +58,31 @@
       font-size: 13px;
       font-weight: 300;
     }
+    #main_div{
+      padding-left: 100px;
+    }
+    #sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+    #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+
+
   </style>
 </head>
 <body>
 <div id="map"></div>
-<div>
+<div id="main_div">
   <input type="button" id="addbtn" value="add">
-  <input type="button" id="routebtn" value="경로 탐색">
+  <!--input type="button" id="routebtn" value="경로 탐색"-->
   <input type="button" id="info" value="info">
 
     <input type="button" id="save" value="save">
     <br>
   <input type="text" id="title" placeholder="title">
-    <ol class="searches">
-      <li>
-        <input id="pac-input" class="controls" type="text" onkeydown="return enter(event)" placeholder="Enter a location">
+    <ol class="searches" id="sortable">
+      <li class="ui-state-default">
+        drag<input id="pac-input" class="controls" type="text" onkeydown="return enter(event)" placeholder="Enter a location">
         <input type="button" class="delbtn" value="delete">
+        <input type="hidden" class="p_id">
+        <input type="hidden" class="p_name">
       </li>
     </ol>
 </div>
@@ -91,6 +100,9 @@
             center: {lat: 37.449610, lng: 126.653084},
             zoom: 16
         });
+
+        var this_li = $("#pac-input").parent();
+
         var input = /** @type {!HTMLInputElement} */(
             document.getElementById('pac-input'));
 
@@ -110,6 +122,9 @@
         markers.push(marker);
 
         autocomplete.addListener('place_changed', function () {
+            var this_p_id = this_li.children(".p_id");
+            var this_p_name = this_li.children(".p_name");
+
             console.log($(this).children());
             infowindow.close();
             var place = autocomplete.getPlace();
@@ -119,6 +134,8 @@
                 window.alert("No details available for input: '" + place.name + "'");
                 return;
             }
+            this_p_id.val(place.place_id);
+            this_p_name.val(place.name);
 
             // If the place has a geometry, then present it on a map.
             if (place.geometry.viewport) {
@@ -159,10 +176,15 @@
     $(document).on('click', '#addbtn', (function () {
         var btn_id = "pac-input" + search_count;
         search_count++;
-        $('.searches').append('<li>' +
-            '<input id="' + btn_id + '" class="controls" type="text" onkeydown="return enter(event)" placeholder="Enter a location">' +
+        $('.searches').append('<li class="ui-state-default">' +
+            'drag<input id="' + btn_id + '" class="controls" type="text" onkeydown="return enter(event)" placeholder="Enter a location">' +
             '<input type="button" class="delbtn" value="delete">' +
+            '<input type="hidden" class="p_id">'+
+            '<input type="hidden" class="p_name">'+
             '</li>');
+        var for_select = '#'+btn_id;
+        var this_li = $(for_select).parent();
+
         var input = /** @type {!HTMLInputElement} */(
             document.getElementById(btn_id));
 
@@ -182,6 +204,9 @@
         markers.push(marker);
 
         autocomplete.addListener('place_changed', function () {
+            var this_p_id = this_li.children(".p_id");
+            var this_p_name = this_li.children(".p_name");
+
             infowindow.close();
             var place = autocomplete.getPlace();
             if (!place.geometry) {
@@ -190,6 +215,9 @@
                 window.alert("No details available for input: '" + place.name + "'");
                 return;
             }
+
+            this_p_id.val(place.place_id);
+            this_p_name.val(place.name);
 
             // If the place has a geometry, then present it on a map.
             if (place.geometry.viewport) {
@@ -237,13 +265,15 @@
         $(this).parent().remove();
         console.log(markers);
     });
-
+;
     //정보 표시
     $(document).on('click', '#info', function () {
-        for (var key in autocompletes) {
-
-            console.log(autocompletes[key].getPlace());
-
+        var s = $(".p_id");
+        var n = $(".p_name");
+        var length = s.length
+        for(var i=0; i< length;i++) {
+            console.log(s[i]);
+            console.log(n[i]);
         }
     });
 
@@ -268,14 +298,12 @@
         var place_ids = "";
         var place_names ="";
         var title = $("#title").val();
-        for(key in autocompletes){
-             if (autocompletes[key].getPlace() != undefined){
-                 place_ids += autocompletes[key].getPlace().place_id +",";
-                 place_names += autocompletes[key].getPlace().name +",";
-             }else{
-                 window.alert("빈칸 ㄴ");
-                 return false;
-             }
+        var ids = $(".p_id");
+        var names = $(".p_name");
+        var length = ids.length;
+        for(var i=0; i< length;i++) {
+            place_ids += ids[i].value+",";
+            place_names += names[i].value+",";
         }
         sendPost('real_create', title ,place_ids, place_names)
     });
@@ -326,6 +354,12 @@
 
         form.submit();
     }
+
+    //divtag 옮기기
+    $( function() {
+        $("#sortable").sortable();
+        $("#sortable").disableSelection();
+    } );
 
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyARFVHKNuUhIbya3S0o0ieuYUI0q5OHz_I&libraries=places&callback=initMap"
